@@ -1,0 +1,326 @@
+<?php
+
+include '../components/connect.php';
+
+if(isset($_COOKIE['tutor_id'])){
+   $tutor_id = $_COOKIE['tutor_id'];
+}else{
+   $tutor_id = '';
+   header('location:login.php');
+}
+
+
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Dashboard</title>
+
+   <!-- Bootstrap CSS -->
+   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
+          integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
+   <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"> -->
+
+   <!-- font awesome cdn link  -->
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+
+   <!-- custom css file link  -->
+   <link rel="stylesheet" href="../css/admin_style.css">
+
+   <!-- Leaflet CSS -->
+   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+          integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+          crossorigin="" />
+
+   <style>
+        /* Ukuran peta */
+        #mapid {
+            height: 100%;
+        }
+
+        .jumbotron {
+            height: 100%;
+            border-radius: 0;
+        }
+
+        body {
+            background-color: #ebe7e1;
+        }
+         .container-fluid {
+            width: 100%;
+            padding-right: 0;
+            padding-left: 15px;
+            margin-right: 0;
+            margin-left: auto;
+         }
+        
+         .row {
+             margin-right: 0;
+         }
+
+         .form-control {
+            font-size: 1.5rem;
+        }
+
+        /* .orm-group {
+            font-size: 2rem;
+        } */
+
+    </style>
+</head>
+<body>
+
+<?php include '../components/admin_header.php'; ?>
+   
+<div class="container-fluid">
+    <div class="row">
+        <!-- Bagian kiri: Form -->
+        <div class="col-md-4" style="padding-right: 0; padding-left: 0; height: 100vh;">
+            <div class="jumbotron" style="font-size: large;">
+                <h1 class="display-4">Add Location</h1>
+                <hr class="my-4">
+                <form action="proses.php" method="post">
+                    <div class="form-group">
+                        <label for="latlong">Latitude, Longitude</label>
+                        <input type="text" class="form-control" id="latlong" name="latlong" placeholder="Klik pada peta untuk mendapatkan koordinat">
+                    </div>
+                    <div class="form-group">
+                        <label for="nama_tempat">Nama Sekolah</label>
+                        <input type="text" class="form-control" name="nama_tempat" placeholder="Masukkan nama tempat">
+                    </div>
+                    <div class="form-group">
+                        <label for="kategori">Kategori Sekolah</label>
+                        <select class="form-control" name="kategori" id="kategori">
+                            <option value="">-- Pilih Kategori Sekolah --</option>
+                            <option value="SMA">SMA</option>
+                            <option value="SMK">SMK</option>
+                            <option value="MA">MA</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="keterangan">Keterangan</label>
+                        <textarea class="form-control" name="keterangan" id="keterangan" cols="30" rows="5" placeholder="Masukkan keterangan"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-info btn-block">Add</button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Bagian kanan: Peta -->
+        <div class="col-md-8" style="padding-right: 0; padding-left: 0; height: 80vh;">
+            <div id="mapid"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin=""></script>
+<script>
+    // Inisialisasi peta dengan lokasi awal (klaten)
+    var mymap = L.map('mapid').setView([-7.705123, 110.601683], 12);
+
+    // Tambahkan tile layer dari OpenStreetMap
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
+        maxZoom: 20
+    }).addTo(mymap);
+
+    // Tambahkan tombol untuk menampilkan lokasi pengguna   
+    var locateButton = L.control({position: 'bottomright'});
+
+    locateButton.onAdd = function (map) {
+        var div = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+        div.innerHTML = '<button style="background-color: white; border: none; padding: 5px; cursor: pointer;">📍</button>';
+        div.onclick = function () {
+            map.locate({setView: true, maxZoom: 15});
+        };
+        return div;
+    };
+
+    locateButton.addTo(mymap);
+
+    // Event untuk menangani lokasi pengguna
+    // mymap.on('locationfound', function (e) {
+    //     L.marker(e.latlng).addTo(mymap)
+    //         .bindPopup("Anda berada di sini").openPopup();
+    // });
+
+    // Handle user location events
+    mymap.on('locationfound', function (e) {
+        var userIcon = L.divIcon({
+            html: `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="red" class="bi bi-geo-fill" viewBox="0 0 16 16">
+                    <path fill-rule="evenodd" d="M4 4a4 4 0 1 1 4.5 3.969V13.5a.5.5 0 0 1-1 0V7.97A4 4 0 0 1 4 3.999zm2.493 8.574a.5.5 0 0 1-.411.575c-.712.118-1.28.295-1.655.493a1.3.3 0 0 0-.37.265.3.3 0 0 0-.057.09V14l.002.008.016.033a.6.6 0 0 0 .145.15c.165.13.435.27.813.395.751.25 1.82.414 3.024.414s2.273-.163 3.024-.414c.378-.126.648-.265.813-.395a.6.6 0 0 0 .146-.15l.015-.033L12 14v-.004a.3.3 0 0 0-.057-.09 1.3 1.3 0 0 0-.37-.264c-.376-.198-.943-.375-1.655-.493a.5.5 0 1 1 .164-.986c.77.127 1.452.328 1.957.594C12.5 13 13 13.4 13 14c0 .426-.26.752-.544.977-.29.228-.68.413-1.116.558-.878.293-2.059.465-3.34.465s-2.462-.172-3.34-.465c-.436-.145-.826-.33-1.116-.558C3.26 14.752 3 14.426 3 14c0-.599.5-1 .961-1.243.505-.266 1.187-.467 1.957-.594a.5.5 0 0 1 .575.411"/>
+                </svg>`,
+            className: '',
+            iconSize: [48, 48],
+            iconAnchor: [24, 48]
+        });
+
+        L.marker(e.latlng, { icon: userIcon }).addTo(mymap)
+            .bindPopup("Anda berada di sini").openPopup();
+        showNearbyLocations(e.latlng.lat, e.latlng.lng);
+    });
+
+    mymap.on('locationerror', function (e) {
+        alert("Lokasi tidak dapat ditemukan: " + e.message);
+    });
+
+
+
+
+    // Tambahkan elemen untuk daftar lokasi di bawah peta
+    var locationList = document.createElement('div');
+    locationList.id = 'locationList';
+    locationList.style.marginTop = '10px';
+    locationList.style.padding = '10px';
+    locationList.style.backgroundColor = '#fff';
+    locationList.style.border = '1px solid #ccc';
+    locationList.style.borderRadius = '5px';
+    locationList.style.maxHeight = '200px';
+    locationList.style.height = '20vh';
+    locationList.style.overflowY = 'auto';
+    document.querySelector('.col-md-8').appendChild(locationList);
+
+    // Fungsi untuk menghitung jarak antara dua koordinat
+    function calculateDistance(lat1, lon1, lat2, lon2) {
+        var R = 6371; // Radius bumi dalam kilometer
+        var dLat = (lat2 - lat1) * Math.PI / 180;
+        var dLon = (lon2 - lon1) * Math.PI / 180;
+        var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c; // Jarak dalam kilometer
+    }
+
+    // Fungsi untuk menampilkan lokasi di sekitar pengguna
+    function showNearbyLocations(userLat, userLng) {
+        var locations = <?php
+            $mysqli = mysqli_connect('localhost', 'root', '', 'ta_wgis'); // Koneksi ke database
+            $locations = [];
+            $tampil = mysqli_query($mysqli, "SELECT * FROM lokasi");
+            while ($hasil = mysqli_fetch_array($tampil)) {
+                $locations[] = [
+                    'id' => $hasil['id'],
+                    'lat' => floatval(explode(',', $hasil['lat_long'])[0]),
+                    'lng' => floatval(explode(',', $hasil['lat_long'])[1]),
+                    'nama_tempat' => $hasil['nama_tempat'],
+                    'kategori' => $hasil['kategori'],
+                    'keterangan' => $hasil['keterangan']
+                ];
+            }
+            echo json_encode($locations);
+        ?>;
+
+        locationList.innerHTML = '<h5>Lokasi di Sekitar Anda:</h5>';
+        var nearbyLocations = locations.filter(function (loc) {
+            return calculateDistance(userLat, userLng, loc.lat, loc.lng) <= 5; // Radius 5 km
+        });
+
+        if (nearbyLocations.length === 0) {
+            locationList.innerHTML += '<p>Tidak ada lokasi di sekitar Anda.</p>';
+        } else {
+            var ul = document.createElement('ul');
+            ul.style.listStyleType = 'none';
+            ul.style.padding = '0';
+            nearbyLocations.forEach(function (loc) {
+                var li = document.createElement('li');
+                li.style.marginBottom = '10px';
+                li.innerHTML = `
+                    <strong>${loc.nama_tempat}</strong> (${loc.kategori})<br>
+                    ${loc.keterangan}<br>
+                    <small>Jarak: ${calculateDistance(userLat, userLng, loc.lat, loc.lng).toFixed(2)} km</small>
+                `;
+                ul.appendChild(li);
+            });
+            locationList.appendChild(ul);
+        }
+    }
+
+
+
+
+    // Event untuk menampilkan lokasi di sekitar pengguna
+    mymap.on('locationfound', function (e) {
+        showNearbyLocations(e.latlng.lat, e.latlng.lng);
+    });
+
+
+    // Variabel untuk popup
+    var popup = L.popup();
+
+    // Fungsi untuk menampilkan popup dan mengisi koordinat ke input form
+    function onMapClick(e) {
+        popup
+            .setLatLng(e.latlng)
+            .setContent("Koordinat: " + e.latlng.toString())
+            .openOn(mymap);
+        document.getElementById('latlong').value = e.latlng.lat + ", " + e.latlng.lng;
+    }
+
+    // Event listener untuk klik pada peta
+    mymap.on('click', onMapClick);
+
+    // Tambahkan marker dari database
+    <?php
+   $mysqli = mysqli_connect('localhost', 'root', '', 'ta_wgis');
+   $tampil = mysqli_query($mysqli, "SELECT * FROM lokasi");
+   while ($hasil = mysqli_fetch_array($tampil)) {
+      $latLng = str_replace(['[', ']', 'LatLng', '(', ')'], '', $hasil['lat_long']);
+      $kategori = $hasil['kategori'];
+      $iconColor = '';
+
+      // Set marker color based on category
+      if ($kategori === 'SMA') {
+         $iconColor = 'blue';
+      } elseif ($kategori === 'SMK') {
+         $iconColor = 'grey';
+      } elseif ($kategori === 'MA') {
+         $iconColor = 'green';
+      }
+   ?>
+      L.marker([<?php echo $latLng; ?>], {
+         icon: L.divIcon({
+            html: `<i class="fa fa-map-marker" style="color: <?php echo $iconColor; ?>; font-size: 30px;"></i>`,
+            className: '',
+            iconSize: [24, 24],
+            iconAnchor: [12, 24]
+         })
+      })
+      .addTo(mymap)
+      .bindPopup(`
+         <strong>Nama Tempat:</strong> <?php echo $hasil['nama_tempat']; ?><br>
+         <strong>Kategori:</strong> <?php echo $hasil['kategori']; ?><br>
+         <strong>Keterangan:</strong> <?php echo $hasil['keterangan']; ?><br>
+         <a href="detail.php?id=<?php echo $hasil['id']; ?>" class="btn btn-sm btn-primary mt-2 text-white">Detail</a>
+      `);
+   <?php } ?>
+     // Fungsi untuk menghapus lokasi berdasarkan ID
+     function deleteLocation(id) {
+        if (confirm('Apakah Anda yakin ingin menghapus lokasi ini?')) {
+            // Kirim permintaan AJAX untuk menghapus lokasi
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', 'delete_location.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    alert('Lokasi berhasil dihapus.');
+                    location.reload(); // Muat ulang halaman
+                }
+            };
+            xhr.send('id=' + id);
+        }
+    }
+</script>
+
+
+<script src="../js/admin_script.js"></script>
+
+</body>
+</html>
