@@ -89,6 +89,14 @@ if(isset($_COOKIE['tutor_id'])){
                         <input type="text" class="form-control" id="latlong" name="latlong" placeholder="Klik pada peta untuk mendapatkan koordinat">
                     </div>
                     <div class="form-group">
+                        <label for="link_sekolah">Link Web Sekolah</label>
+                        <input type="text" class="form-control" name="link_sekolah" placeholder="Masukkan link web sekolah">
+                    </div>
+                    <div class="form-group">
+                        <label for="link_lokasi">Link Lokasi Sekolah</label>
+                        <input type="text" class="form-control" name="link_lokasi" placeholder="Masukkan Link lokasi sekolah">
+                    </div>
+                    <div class="form-group">
                         <label for="nama_tempat">Nama Sekolah</label>
                         <input type="text" class="form-control" name="nama_tempat" placeholder="Masukkan nama tempat">
                     </div>
@@ -294,11 +302,13 @@ if(isset($_COOKIE['tutor_id'])){
          })
       })
       .addTo(mymap)
-      .bindPopup(`
-         <strong>Nama Tempat:</strong> <?php echo $hasil['nama_tempat']; ?><br>
-         <strong>Kategori:</strong> <?php echo $hasil['kategori']; ?><br>
-         <strong>Keterangan:</strong> <?php echo $hasil['keterangan']; ?><br>
-         <a href="detail.php?id=<?php echo $hasil['id']; ?>" class="btn btn-sm btn-primary mt-2 text-white">Detail</a>
+    .bindPopup(`
+       <strong>Nama Tempat:</strong> <?php echo $hasil['nama_tempat']; ?><br>
+       <strong>Kategori:</strong> <?php echo $hasil['kategori']; ?><br>
+       <div class="d-flex justify-content-between mt-2">
+        <button onclick="deleteLocation(<?php echo $hasil['id']; ?>)" class="btn btn-sm btn-danger text-white">Hapus</button>
+        <a href="detail.php?id=<?php echo $hasil['id']; ?>" class="btn btn-sm btn-primary text-white">Detail</a>
+       </div>
       `);
    <?php } ?>
      // Fungsi untuk menghapus lokasi berdasarkan ID
