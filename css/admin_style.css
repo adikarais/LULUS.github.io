@@ -5,7 +5,7 @@
 :root {
   --main-color: #8e44ad;
   --red: #e74c3c;
-  --oragen: #f39c12;
+  --orange: #f39c12;
   --white: #fff;
   --black: #2c3e50;
   --light-color: #888;
@@ -107,7 +107,7 @@ section {
 
 .option-btn,
 .inline-option-btn {
-  background-color: var(--oragen);
+  background-color: var(--orange);
 }
 
 .delete-btn,
@@ -461,35 +461,64 @@ section {
   flex: 1 1 25rem;
 }
 
-.dashboard .box-container {
+.search-results .box-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(30rem, 1fr));
+  grid-template-columns: repeat(auto-fit, 35rem);
+  gap: 1.5rem;
   align-items: flex-start;
   justify-content: center;
-  gap: 1.5rem;
 }
 
-.dashboard .box-container .box {
-  padding: 2rem;
+.search-results .box-container .box {
   border-radius: 0.5rem;
   background-color: var(--white);
-  text-align: center;
+  padding: 2rem;
 }
 
-.dashboard .box-container .box h3 {
+.search-results .box-container .box .tutor {
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.search-results .box-container .box .tutor img {
+  width: 5rem;
+  height: 5rem;
+  border-radius: 50%;
+  object-fit: cover;
   margin-bottom: 0.5rem;
-  font-size: 2.5rem;
-  color: var(--black);
-  margin-bottom: 1.5rem;
 }
 
-.dashboard .box-container .box p {
+.search-results .box-container .box .tutor h3 {
   font-size: 2rem;
+  color: var(--black);
+  margin-bottom: 0.2rem;
+}
+
+.search-results .box-container .box .tutor span {
+  font-size: 1.5rem;
   color: var(--light-color);
-  padding: 1rem 1.5rem;
+}
+
+.search-results .box-container .box .thumb {
+  width: 100%;
   border-radius: 0.5rem;
-  background-color: var(--light-bg);
-  margin: 1rem 0;
+  height: 20rem;
+  object-fit: cover;
+  margin-bottom: 0.3rem;
+}
+
+.search-results .box-container .box .title {
+  font-size: 2rem;
+  color: var(--black);
+  margin-top: 0.5rem;
+  padding: 0.5rem 0;
+}
+
+.search-results .more-btn {
+  margin-top: 2rem;
+  text-align: center;
 }
 
 .tutor-profile .details {
