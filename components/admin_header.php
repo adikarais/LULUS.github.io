@@ -1,4 +1,5 @@
 <?php
+// Menampilkan pesan notifikasi jika ada
 if (isset($message)) {
    foreach ($message as $msg) {
       echo '
@@ -13,13 +14,16 @@ if (isset($message)) {
 
 <header class="header">
    <section class="flex">
+      <!-- Logo Admin -->
       <a href="dashboard.php" class="logo">Admin.</a>
 
+      <!-- Form pencarian -->
       <form action="../admin/search_admin.php" method="post" class="search-form">
          <input type="text" name="search" placeholder="search here..." required maxlength="100">
          <button type="submit" class="fas fa-search" name="search_btn"></button>
       </form>
 
+      <!-- Ikon navigasi -->
       <div class="icons">
          <div id="menu-btn" class="fas fa-bars"></div>
          <div id="search-btn" class="fas fa-search"></div>
@@ -27,8 +31,10 @@ if (isset($message)) {
          <div id="toggle-btn" class="fas fa-sun"></div>
       </div>
 
+      <!-- Profil pengguna -->
       <div class="profile">
          <?php
+         // Menampilkan profil tutor jika sudah login
          if (isset($tutor_id) && !empty($tutor_id)) {
             $select_profile = $conn->prepare("SELECT * FROM `tutors` WHERE id = ?");
             $select_profile->execute([$tutor_id]);
@@ -43,6 +49,7 @@ if (isset($message)) {
             }
          } else {
          ?>
+            <!-- Jika belum login -->
             <h3>Please login or register</h3>
             <div class="flex-btn">
                <a href="login.php" class="option-btn">Login</a>
@@ -54,12 +61,15 @@ if (isset($message)) {
 </header>
 
 <div class="side-bar">
+   <!-- Tombol untuk menutup sidebar -->
    <div class="close-side-bar">
       <i class="fas fa-times"></i>
    </div>
 
+   <!-- Profil pengguna di sidebar -->
    <div class="profile">
       <?php
+      // Menampilkan profil tutor jika sudah login
       if (isset($tutor_id) && !empty($tutor_id)) {
          $select_profile = $conn->prepare("SELECT * FROM `tutors` WHERE id = ?");
          $select_profile->execute([$tutor_id]);
@@ -74,6 +84,7 @@ if (isset($message)) {
          }
       } else {
       ?>
+         <!-- Jika belum login -->
          <h3>Please login or register</h3>
          <div class="flex-btn">
             <a href="login.php" class="option-btn">Login</a>
@@ -82,6 +93,7 @@ if (isset($message)) {
       <?php } ?>
    </div>
 
+   <!-- Navigasi sidebar -->
    <nav class="navbar">
       <a href="dashboard.php"><i class="fas fa-home"></i><span>Home</span></a>
       <a href="playlists.php"><i class="fa-solid fa-bars-staggered"></i><span>Playlists</span></a>
