@@ -73,18 +73,6 @@ if(isset($message)){
 <!-- registe section ends -->
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 <script>
 
 let darkMode = localStorage.getItem('dark-mode');

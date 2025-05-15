@@ -1,51 +1,52 @@
 <?php
-// Sertakan koneksi database
+// Menyertakan file koneksi database
 include 'components/connect.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
+   <!-- Meta tags untuk pengaturan dasar halaman web -->
    <meta charset="UTF-8">
    <meta http-equiv="X-UA-Compatible" content="IE=edge">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <title>Home</title>
 
-   <!-- Bootstrap CSS -->
+   <!-- Menyertakan CSS Bootstrap -->
    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
          integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
 
-   <!-- Font Awesome -->
+   <!-- Menyertakan Font Awesome untuk ikon -->
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
 
-   <!-- CSS Kustom -->
+   <!-- CSS kustom -->
    <link rel="stylesheet" href="css/style.css">
 
-   <!-- Leaflet CSS -->
+   <!-- CSS Leaflet untuk peta -->
    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
 
 <body>
 
+<!-- Menyertakan header user -->
 <?php include 'components/user_header.php'; ?>
 
-<!-- Kontainer Peta -->
+<!-- Container untuk menampilkan peta -->
 <div id="mapid" style="height: 85vh; width: 100%;"></div>
 
-<!-- Leaflet JS -->
+<!-- JavaScript Leaflet untuk fungsi peta -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-   // Inisialisasi peta dan atur tampilan default
+   // Inisialisasi peta dengan view default di Koordinat Klaten
    var mymap = L.map('mapid').setView([-7.705123, 110.601683], 12);
 
-   // Tambahkan lapisan ubin OpenStreetMap
+   // Menambahkan tile layer dari OpenStreetMap
    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
       maxZoom: 20
    }).addTo(mymap);
 
-   // Tambahkan tombol lokasi kustom ke peta
+   // Membuat tombol untuk melacak lokasi user
    var locateButton = L.control({position: 'bottomright'});
    locateButton.onAdd = function (map) {
       var div = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
@@ -57,8 +58,9 @@ include 'components/connect.php';
    };
    locateButton.addTo(mymap);
 
-   // Tangani event lokasi ditemukan
+   // Fungsi yang dijalankan ketika lokasi user ditemukan
    mymap.on('locationfound', function (e) {
+      // Membuat ikon khusus untuk menandai posisi user
       var userIcon = L.divIcon({
          html: `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="red" class="bi bi-geo-fill" viewBox="0 0 16 16"><path fill-rule="evenodd" d="..."/></svg>`,
          className: '',
@@ -66,18 +68,20 @@ include 'components/connect.php';
          iconAnchor: [24, 48]
       });
 
+      // Menambahkan marker untuk posisi user
       L.marker(e.latlng, { icon: userIcon }).addTo(mymap)
          .bindPopup("Anda berada di sini").openPopup();
 
+      // Menampilkan lokasi terdekat dari posisi user
       showNearbyLocations(e.latlng.lat, e.latlng.lng);
    });
 
-   // Tangani event lokasi error
+   // Fungsi yang dijalankan jika gagal menemukan lokasi user
    mymap.on('locationerror', function (e) {
       alert("Lokasi tidak dapat ditemukan: " + e.message);
    });
 
-   // Hitung jarak antara dua koordinat menggunakan rumus Haversine
+   // Fungsi untuk menghitung jarak antara dua koordinat (dalam km)
    function calculateDistance(lat1, lon1, lat2, lon2) {
       var R = 6371; // Radius bumi dalam km
       var dLat = (lat2 - lat1) * Math.PI / 180;
@@ -89,8 +93,9 @@ include 'components/connect.php';
       return R * c;
    }
 
-   // Tampilkan lokasi terdekat dalam radius 5 km
+   // Fungsi untuk menampilkan lokasi terdekat dari posisi user
    function showNearbyLocations(userLat, userLng) {
+      // Mengambil data lokasi dari database PHP
       var locations = <?php
          $mysqli = mysqli_connect('localhost', 'root', '', 'ta_wgis');
          if (!$mysqli) {
@@ -111,9 +116,10 @@ include 'components/connect.php';
                ];
             }
          }
-         echo json_encode($locations, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
+         echo json_encode($locations);
       ?>;
 
+      // Membuat atau mengupdate daftar lokasi terdekat
       var locationList = document.getElementById('locationList');
       if (!locationList) {
          locationList = document.createElement('div');
@@ -134,6 +140,7 @@ include 'components/connect.php';
          locationList.innerHTML = '';
       }
 
+      // Filter lokasi yang berada dalam radius 5km dari user
       var nearbyLocations = locations.filter(loc => calculateDistance(userLat, userLng, loc.lat, loc.lng) <= 5);
 
       if (nearbyLocations.length === 0) {
@@ -143,6 +150,7 @@ include 'components/connect.php';
          ul.style.listStyle = 'none';
          ul.style.padding = '0';
 
+         // Menambahkan setiap lokasi terdekat ke dalam list
          nearbyLocations.forEach(loc => {
             var li = document.createElement('li');
             li.style.marginBottom = '10px';
@@ -161,7 +169,7 @@ include 'components/connect.php';
       }
    }
 
-   // Tambahkan marker dari database
+   // Menambahkan marker untuk semua lokasi dari database
    <?php
    $tampil = mysqli_query($mysqli, "SELECT * FROM lokasi");
    while ($hasil = mysqli_fetch_array($tampil)) {
@@ -184,69 +192,48 @@ include 'components/connect.php';
    `);
    <?php } ?>
 
-   // Tambahkan lapisan GeoJSON untuk Klaten
-   var klatenLayer = <?php
-      $klatenGeoJSON = @file_get_contents(__DIR__ . '/json/klaten_layer.geojson');
-      if ($klatenGeoJSON === false) {
-          echo "<script>console.error('Gagal memuat file GeoJSON.');</script>";
-          $klatenGeoJSON = '{}'; // Gunakan GeoJSON kosong jika gagal
-      }
-      echo $klatenGeoJSON;
-   ?>;
+   // Variabel untuk menyimpan warna kecamatan
+   let districtColors = {};
 
-   L.geoJSON(klatenLayer, {
-      style: function(feature) {
-         return {
-            color: "#FF6600",
-            weight: 2,
-            opacity: 1,
-            fillOpacity: 0.2,
-            fillColor: getColorByDistrict(feature.properties.NAME_3)
-         };
-      },
-      onEachFeature: function(feature, layer) {
-         if (feature.properties && feature.properties.NAME_3) {
-            layer.bindPopup("<b>Kecamatan:</b> " + feature.properties.NAME_3);
-         }
-      }
-   }).addTo(mymap);
+   // Mengambil data warna kecamatan dari file PHP
+   fetch('json_kecamatan_warna.php')
+      .then(response => response.json())
+      .then(data => {
+         districtColors = data;
+         addGeoJSON();
+      });
 
-   // Fungsi untuk menentukan warna berdasarkan kecamatan
+   // Fungsi untuk mendapatkan warna berdasarkan nama kecamatan
    function getColorByDistrict(district) {
-      var colors = {
-         "Bayat": "#1f77b4",
-         "Cawas": "#ff7f0e",
-         "Ceper": "#2ca02c",
-         "Delanggu": "#d62728",
-         "Gantiwarno": "#9467bd",
-         "Jatinom": "#8c564b",
-         "Jogonalan": "#e377c2",
-         "Juwiring": "#7f7f7f",
-         "Kalikotes": "#bcbd22",
-         "Karanganom": "#17becf",
-         "Karangdowo": "#aec7e8",
-         "Karangnongko": "#ffbb78",
-         "Kebonarum": "#98df8a",
-         "Kemalang": "#ff9896",
-         "Klaten Selatan": "#c5b0d5",
-         "Klaten Utara": "#c49c94",
-         "Klatentengah": "#f7b6d2",
-         "Manisrenggo": "#c7c7c7",
-         "Ngawen": "#dbdb8d",
-         "Pedan": "#9edae5",
-         "Polanharjo": "#393b79",
-         "Prambanan": "#637939",
-         "Trucuk": "#8c6d31",
-         "Tulung": "#843c39",
-         "Wedi": "#7b4173",
-         "Wonosari": "#5254a3"
-      };
-      return colors[district] || "#888888"; // Warna default jika kecamatan tidak ditemukan
+      return districtColors[district] || "#ffffff"; // Warna default jika tidak ditemukan
    }
 
+   // Fungsi untuk menambahkan layer GeoJSON kecamatan
+   function addGeoJSON() {
+      fetch('json/klaten.geojson')
+         .then(response => response.json())
+         .then(geojson => {
+            L.geoJSON(geojson, {
+               style: function(feature) {
+                  return {
+                     color: "##000000",
+                     weight: 0.5,
+                     opacity: 1,
+                     fillOpacity: 1,
+                     fillColor: getColorByDistrict(feature.properties.NAME_3)
+                  };
+               },
+               onEachFeature: function(feature, layer) {
+                  if (feature.properties && feature.properties.NAME_3) {
+                     layer.bindPopup("<b>Kecamatan:</b> " + feature.properties.NAME_3);
+                  }
+               }
+            }).addTo(mymap);
+         });
+   }
 </script>
 
-<!-- JS Kustom -->
+<!-- Menyertakan script JavaScript kustom -->
 <script src="js/script.js"></script>
 
 </body>

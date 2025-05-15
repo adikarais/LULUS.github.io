@@ -12,10 +12,13 @@ $lat_long = $_POST['latlong'] ?? '';
 $nama_tempat = $_POST['nama_tempat'] ?? '';
 $kategori = $_POST['kategori'] ?? '';
 $keterangan = $_POST['keterangan'] ?? '';
+$link_sekolah = $_POST['link_sekolah'] ?? '';
+$link_lokasi = $_POST['link_lokasi'] ?? '';
+$nama_kecamatan = $_POST['nama_kecamatan'] ?? '';
 
 // Input data ke database
-$query = "INSERT INTO lokasi (lat_long, nama_tempat, kategori, keterangan) 
-          VALUES ('$lat_long', '$nama_tempat', '$kategori', '$keterangan')";
+$query = "INSERT INTO lokasi (lat_long, nama_tempat, kategori, keterangan, link_sekolah, link_lokasi, nama_kecamatan) 
+          VALUES ('$lat_long', '$nama_tempat', '$kategori', '$keterangan', '$link_sekolah', '$link_lokasi', '$nama_kecamatan')";
 
 if (mysqli_query($connect, $query)) {
     // Redirect ke halaman dashboard

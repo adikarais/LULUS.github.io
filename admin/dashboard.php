@@ -111,6 +111,40 @@ if(isset($_COOKIE['tutor_id'])){
                         </select>
                     </div>
                     <div class="form-group">
+                       <!-- Dropdown untuk memilih kecamatan di Kabupaten Klaten -->
+                    <label for="nama_kecamatan">Kecamatan</label>
+                    <select class="form-control" name="nama_kecamatan" id="nama_kecamatan">
+                        <option value="">-- Pilih Kecamatan --</option> <!-- Opsi default kosong -->
+                        <!-- Daftar lengkap kecamatan di Kabupaten Klaten -->
+                        <option value="Bayat">Bayat</option>
+                        <option value="Cawas">Cawas</option>
+                        <option value="Ceper">Ceper</option>
+                        <option value="Delanggu">Delanggu</option>
+                        <option value="Gantiwarno">Gantiwarno</option>
+                        <option value="Jatinom">Jatinom</option>
+                        <option value="Jogonalan">Jogonalan</option>
+                        <option value="Juwiring">Juwiring</option>
+                        <option value="Kalikotes">Kalikotes</option>
+                        <option value="Karanganom">Karanganom</option> <!-- Kemungkinan maksud: Karanganom -->
+                        <option value="Karangdowo">Karangdowo</option>
+                        <option value="Karangnongko">Karangnongko</option>
+                        <option value="Kebonarum">Kebonarum</option>
+                        <option value="Kemalang">Kemalang</option>
+                        <option value="Klaten Utara">Klaten Utara</option>
+                        <option value="Klaten Tengah">Klaten Tengah</option>
+                        <option value="Klaten Selatan">Klaten Selatan</option>
+                        <option value="Manisrenggo">Manisrenggo</option>
+                        <option value="Ngawen">Ngawen</option>
+                        <option value="Pedan">Pedan</option>
+                        <option value="Polanharjo">Polanharjo</option>
+                        <option value="Prambanan">Prambanan</option>
+                        <option value="Trucuk">Trucuk</option>
+                        <option value="Tulung">Tulung</option>
+                        <option value="Wedi">Wedi</option>
+                        <option value="Wonosari">Wonosari</option>
+                    </select>
+                    </div>
+                    <div class="form-group">
                         <label for="keterangan">Keterangan</label>
                         <textarea class="form-control" name="keterangan" id="keterangan" cols="30" rows="5" placeholder="Masukkan keterangan"></textarea>
                     </div>
@@ -221,6 +255,7 @@ if(isset($_COOKIE['tutor_id'])){
                     'lng' => floatval(explode(',', $hasil['lat_long'])[1]),
                     'nama_tempat' => $hasil['nama_tempat'],
                     'kategori' => $hasil['kategori'],
+                    'nama_kecamatan' => $hasil['nama_kecamatan'],
                     'keterangan' => $hasil['keterangan']
                 ];
             }
