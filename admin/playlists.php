@@ -1,6 +1,3 @@
-I'll create a `delete.php` file that handles the deletion process for the delete button in your application. Here's a complete implementation with proper security measures:
-
-```php
 <?php
 include '../components/connect.php';
 

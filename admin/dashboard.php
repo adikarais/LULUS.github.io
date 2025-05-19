@@ -125,7 +125,7 @@ if(isset($_COOKIE['tutor_id'])){
                         <option value="Jogonalan">Jogonalan</option>
                         <option value="Juwiring">Juwiring</option>
                         <option value="Kalikotes">Kalikotes</option>
-                        <option value="Karanganom">Karanganom</option> <!-- Kemungkinan maksud: Karanganom -->
+                        <option value="Karanganom">Karanganom</option> 
                         <option value="Karangdowo">Karangdowo</option>
                         <option value="Karangnongko">Karangnongko</option>
                         <option value="Kebonarum">Kebonarum</option>
@@ -155,7 +155,21 @@ if(isset($_COOKIE['tutor_id'])){
         
         <!-- Bagian kanan: Peta -->
         <div class="col-md-8" style="padding-right: 0; padding-left: 0; height: 80vh;">
-            <div id="mapid"></div>
+            
+            <div id="mapid" style="position: relative;">
+                <div style="position: absolute; bottom: 0; left: 0; width: 100%;">
+                    <div id="filterControl" class="leaflet-control" style="position: relative; display: inline-block; margin: 10px; z-index: 1000; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 5px rgba(0,0,0,0.4);">
+                        <label for="filterKategori">Filter Sekolah:</label>
+                        <select id="filterKategori" class="form-control mt-1">
+                            <option value="all">Semua</option>
+                            <option value="SMA">SMA</option>
+                            <option value="SMK">SMK</option>
+                            <option value="MA">MA</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -213,9 +227,6 @@ if(isset($_COOKIE['tutor_id'])){
     mymap.on('locationerror', function (e) {
         alert("Lokasi tidak dapat ditemukan: " + e.message);
     });
-
-
-
 
     // Tambahkan elemen untuk daftar lokasi di bawah peta
     var locationList = document.createElement('div');
@@ -311,42 +322,50 @@ if(isset($_COOKIE['tutor_id'])){
     // Event listener untuk klik pada peta
     mymap.on('click', onMapClick);
 
-    // Tambahkan marker dari database
-    <?php
-   $mysqli = mysqli_connect('localhost', 'root', '', 'ta_wgis');
+    // Display All Markers from DB with Filtering
+   var allMarkers = [];
+
+   <?php
    $tampil = mysqli_query($mysqli, "SELECT * FROM lokasi");
    while ($hasil = mysqli_fetch_array($tampil)) {
       $latLng = str_replace(['[', ']', 'LatLng', '(', ')'], '', $hasil['lat_long']);
       $kategori = $hasil['kategori'];
-      $iconColor = '';
-
-      // Set marker color based on category
-      if ($kategori === 'SMA') {
-         $iconColor = 'blue';
-      } elseif ($kategori === 'SMK') {
-         $iconColor = 'grey';
-      } elseif ($kategori === 'MA') {
-         $iconColor = 'green';
-      }
+      $iconColor = $kategori === 'SMA' ? 'blue' : ($kategori === 'SMK' ? 'grey' : ($kategori === 'MA' ? 'green' : 'red'));
    ?>
-      L.marker([<?php echo $latLng; ?>], {
-         icon: L.divIcon({
-            html: `<i class="fa fa-map-marker" style="color: <?php echo $iconColor; ?>; font-size: 30px;"></i>`,
-            className: '',
-            iconSize: [24, 24],
-            iconAnchor: [12, 24]
-         })
+   var marker = L.marker([<?php echo $latLng; ?>], {
+      icon: L.divIcon({
+         html: `<i class="fa fa-map-marker" style="color: <?php echo $iconColor; ?>; font-size: 30px;"></i>`,
+         className: '',
+         iconSize: [24, 24],
+         iconAnchor: [12, 24]
       })
-      .addTo(mymap)
-    .bindPopup(`
-       <strong>Nama Tempat:</strong> <?php echo $hasil['nama_tempat']; ?><br>
-       <strong>Kategori:</strong> <?php echo $hasil['kategori']; ?><br>
-       <div class="d-flex justify-content-between mt-2">
-        <button onclick="deleteLocation(<?php echo $hasil['id']; ?>)" class="btn btn-sm btn-danger text-white">Hapus</button>
-        <a href="detail.php?id=<?php echo $hasil['id']; ?>" class="btn btn-sm btn-primary text-white">Detail</a>
-       </div>
-      `);
+   }).bindPopup(`
+      <strong style="font-size: 1.5rem;">Nama Tempat : </strong> <span style="font-size: 1.5rem;"><?php echo $hasil['nama_tempat']; ?></span><br>
+      <strong style="font-size: 1.5rem;">Kategori : </strong> <span style="font-size: 1.5rem;"><?php echo $hasil['kategori']; ?></span><br>
+      <strong style="font-size: 1.5rem;">Keterangan : </strong> <span style="font-size: 1.5rem;"><?php echo $hasil['keterangan']; ?></span><br>
+      <div class="d-flex justify-content-between">
+         <a href="detail.php?id=<?php echo urlencode($hasil['id']); ?>" class="btn btn-sm btn-primary mt-2 text-white">Detail</a>
+         <a href="<?php echo htmlspecialchars($hasil['link_lokasi']); ?>" target="_blank" class="btn btn-sm btn-primary mt-2 text-white">Lokasi</a>
+      </div>
+   `);
+   marker.kategori = "<?php echo $hasil['kategori']; ?>";
+   marker.addTo(mymap);
+   allMarkers.push(marker);
    <?php } ?>
+
+   // Filter Handler
+   document.getElementById('filterKategori').addEventListener('change', function () {
+      var selected = this.value;
+
+      allMarkers.forEach(marker => {
+         if (selected === 'all' || marker.kategori === selected) {
+            marker.addTo(mymap);
+         } else {
+            mymap.removeLayer(marker);
+         }
+      });
+   });
+   
      // Fungsi untuk menghapus lokasi berdasarkan ID
      function deleteLocation(id) {
         if (confirm('Apakah Anda yakin ingin menghapus lokasi ini?')) {

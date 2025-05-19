@@ -29,17 +29,27 @@ include 'components/connect.php';
 
 <?php include 'components/user_header.php'; ?>
 
-<!-- Map Container -->
-<div id="mapid" style="height: 85vh; width: 100%;"></div>
+<div id="mapid" style="height: 85vh; width: 100%; position: relative;">  <!-- Tambahkan position: relative -->
+   <!-- Filter Control -->
+   <div id="filterControl" class="leaflet-control" style="position: absolute; bottom: 10px; left: 10px; z-index: 1000; background: white; padding: 10px; border-radius: 8px; box-shadow: 0 1px 5px rgba(0,0,0,0.4);">
+      <label for="filterKategori">Filter Sekolah:</label>
+      <select id="filterKategori" class="form-control mt-1">
+         <option value="all">Semua</option>
+         <option value="SMA">SMA</option>
+         <option value="SMK">SMK</option>
+         <option value="MA">MA</option>
+      </select>
+   </div>
+</div>
+
+
 
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-   // Initialize map (default: Yogyakarta)
    var mymap = L.map('mapid').setView([-7.705123, 110.601683], 12);
 
-   // Add OpenStreetMap tile
    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
       maxZoom: 20
@@ -57,7 +67,6 @@ include 'components/connect.php';
    };
    locateButton.addTo(mymap);
 
-   // Location Found Handler
    mymap.on('locationfound', function (e) {
       var userIcon = L.divIcon({
          html: `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="red" class="bi bi-geo-fill" viewBox="0 0 16 16">
@@ -78,7 +87,6 @@ include 'components/connect.php';
       alert("Lokasi tidak dapat ditemukan: " + e.message);
    });
 
-   // Calculate Distance
    function calculateDistance(lat1, lon1, lat2, lon2) {
       var R = 6371;
       var dLat = (lat2 - lat1) * Math.PI / 180;
@@ -90,7 +98,6 @@ include 'components/connect.php';
       return R * c;
    }
 
-   // Show Nearby Locations
    function showNearbyLocations(userLat, userLng) {
       var locations = <?php
          $mysqli = mysqli_connect('localhost', 'root', '', 'ta_wgis');
@@ -120,7 +127,7 @@ include 'components/connect.php';
             padding: 10px;
             position: absolute;
             bottom: 10px;
-            left: 10px;
+            right: 10px;
             background-color: white;
             border: 1px solid #ccc;
             border-radius: 5px;
@@ -159,7 +166,9 @@ include 'components/connect.php';
       }
    }
 
-   // Display All Markers from DB
+   // Display All Markers from DB with Filtering
+   var allMarkers = [];
+
    <?php
    $tampil = mysqli_query($mysqli, "SELECT * FROM lokasi");
    while ($hasil = mysqli_fetch_array($tampil)) {
@@ -167,20 +176,39 @@ include 'components/connect.php';
       $kategori = $hasil['kategori'];
       $iconColor = $kategori === 'SMA' ? 'blue' : ($kategori === 'SMK' ? 'grey' : ($kategori === 'MA' ? 'green' : 'red'));
    ?>
-   L.marker([<?php echo $latLng; ?>], {
+   var marker = L.marker([<?php echo $latLng; ?>], {
       icon: L.divIcon({
          html: `<i class="fa fa-map-marker" style="color: <?php echo $iconColor; ?>; font-size: 30px;"></i>`,
          className: '',
          iconSize: [24, 24],
          iconAnchor: [12, 24]
       })
-   }).addTo(mymap).bindPopup(`
+   }).bindPopup(`
       <strong style="font-size: 1.5rem;">Nama Tempat : </strong> <span style="font-size: 1.5rem;"><?php echo $hasil['nama_tempat']; ?></span><br>
       <strong style="font-size: 1.5rem;">Kategori : </strong> <span style="font-size: 1.5rem;"><?php echo $hasil['kategori']; ?></span><br>
       <strong style="font-size: 1.5rem;">Keterangan : </strong> <span style="font-size: 1.5rem;"><?php echo $hasil['keterangan']; ?></span><br>
-      <a href="detail.php?id=<?php echo $hasil['id']; ?>" class="btn btn-sm btn-primary mt-2 text-white">Detail</a>
+      <div class="d-flex justify-content-between">
+         <a href="detail.php?id=<?php echo urlencode($hasil['id']); ?>" class="btn btn-sm btn-primary mt-2 text-white">Detail</a>
+         <a href="<?php echo htmlspecialchars($hasil['link_lokasi']); ?>" target="_blank" class="btn btn-sm btn-primary mt-2 text-white">Lokasi</a>
+      </div>
    `);
+   marker.kategori = "<?php echo $hasil['kategori']; ?>";
+   marker.addTo(mymap);
+   allMarkers.push(marker);
    <?php } ?>
+
+   // Filter Handler
+   document.getElementById('filterKategori').addEventListener('change', function () {
+      var selected = this.value;
+
+      allMarkers.forEach(marker => {
+         if (selected === 'all' || marker.kategori === selected) {
+            marker.addTo(mymap);
+         } else {
+            mymap.removeLayer(marker);
+         }
+      });
+   });
 </script>
 
 <!-- Footer -->

@@ -36,6 +36,22 @@ if ($id > 0) {
     // Jika ID tidak diberikan atau tidak valid
     die("ID tidak diberikan.");
 }
+
+$stmt_jurusan = $conn->prepare("
+    SELECT pelajaran.nama_pelajaran 
+    FROM penjurusan 
+    JOIN pelajaran ON penjurusan.pelajaran_id = pelajaran.id 
+    WHERE penjurusan.lokasi_id = ?
+");
+$stmt_jurusan->bind_param("i", $id);
+$stmt_jurusan->execute();
+$result_jurusan = $stmt_jurusan->get_result();
+
+$jurusan_list = [];
+while ($row = $result_jurusan->fetch_assoc()) {
+    $jurusan_list[] = $row['nama_pelajaran'];
+}
+$stmt_jurusan->close();
 ?>
 
 <!DOCTYPE html>
@@ -74,12 +90,24 @@ if ($id > 0) {
                 : 'Link lokasi tidak tersedia'; ?>
         </p>
 
+        <!-- Menampilkan list jurusan sekolah -->
+        <h5>Jurusan yang Tersedia:</h5>
+        <?php if (!empty($jurusan_list)) : ?>
+            <ul>
+                <?php foreach ($jurusan_list as $jurusan): ?>
+                    <li><?= htmlspecialchars($jurusan) ?></li>
+                <?php endforeach; ?>
+            </ul>
+        <?php else: ?>
+            <p>Data jurusan tidak tersedia.</p>
+        <?php endif; ?>
+
         <!-- Menampilkan jenis sekolah -->
         <h5>Jenis Sekolah:</h5>
         <p><?= !empty(trim($data['kategori'])) ? nl2br(htmlspecialchars($data['kategori'])) : 'Jenis sekolah tidak tersedia'; ?></p>
 
-        <!-- Menampilkan program pada sekolah -->
-        <h5>Program pada Sekolah:</h5>
+        <!-- Menampilkan Alamat pada sekolah -->
+        <h5>Alamat Sekolah:</h5>
         <p><?= !empty(trim($data['keterangan'])) ? nl2br(htmlspecialchars($data['keterangan'])) : 'Program sekolah tidak tersedia'; ?></p>
 
         <!-- Tombol kembali ke halaman utama -->
