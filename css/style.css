@@ -19,6 +19,7 @@
   outline: none;
   border: none;
   text-decoration: none;
+  font-size: small;
 }
 
 *::selection {
@@ -181,6 +182,8 @@ section {
   margin-bottom: 3rem;
 }
 
+/* header mulai */
+
 .header {
   background-color: var(--white);
   border-bottom: var(--border);
@@ -188,7 +191,7 @@ section {
   top: 0;
   left: 0;
   right: 0;
-  z-index: 1000;
+  z-index: 1100;
 }
 
 .header .flex {
@@ -271,6 +274,7 @@ section {
 .header .flex .profile.active {
   transform: scale(1);
   transition: 0.2s linear;
+  z-index: 1100;
 }
 
 .header .flex .profile img {
@@ -376,6 +380,8 @@ section {
 .side-bar.active {
   left: -31rem;
 }
+
+/* header end */
 
 .quick-select .box-container {
   display: grid;
@@ -1584,4 +1590,10 @@ section {
   .watch-video .video-details .video {
     height: auto;
   }
+}
+.leaflet-top,
+.leaflet-bottom {
+  position: absolute;
+  z-index: 900;
+  pointer-events: none;
 }

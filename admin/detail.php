@@ -289,11 +289,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <!-- Tombol simpan dan kembali -->
             <button type="submit" class="btn btn-primary">Simpan</button>
+            <button type="button" class="btn btn-danger" onclick="deleteLocation(<?= $id ?>)">Hapus</button>
             <a href="dashboard.php" class="btn btn-secondary">Kembali</a>
         </form>
     </div>
 
     <script>
+
+        function deleteLocation(id) {
+            if (confirm('Apakah Anda yakin ingin menghapus lokasi ini?')) {
+                var xhr = new XMLHttpRequest();
+                xhr.open('POST', 'delete_location.php', true);
+                xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4) {
+                        if (xhr.status === 200) {
+                            alert('Lokasi berhasil dihapus.');
+                            window.location.href = 'dashboard.php'; // Redirect ke dashboard setelah hapus
+                        } else {
+                            alert('Terjadi kesalahan saat menghapus lokasi.');
+                        }
+                    }
+                };
+                xhr.send('id=' + encodeURIComponent(id));
+            }
+        }
+
         function addNewJurusan() {
             const newJurusanInput = document.getElementById('new_jurusan');
             const newJurusanName = newJurusanInput.value.trim();

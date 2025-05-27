@@ -10,6 +10,7 @@ include 'components/connect.php';
    <meta http-equiv="X-UA-Compatible" content="IE=edge">
    <meta name="viewport" content="width=device-width, initial-scale=1.0">
    <title>Home</title>
+   
 
    <!-- Bootstrap CSS -->
    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
@@ -24,7 +25,13 @@ include 'components/connect.php';
    <!-- Leaflet CSS -->
    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 </head>
-
+<style>
+   .leaflet-top, .leaflet-bottom {
+    position: absolute;
+    z-index: 900;
+    pointer-events: none;
+   }
+</style>
 <body>
 
 <?php include 'components/user_header.php'; ?>
@@ -69,9 +76,7 @@ include 'components/connect.php';
 
    mymap.on('locationfound', function (e) {
       var userIcon = L.divIcon({
-         html: `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="red" class="bi bi-geo-fill" viewBox="0 0 16 16">
-                  <path fill-rule="evenodd" d="..."/>
-               </svg>`,
+         html: `<i class="fas fa-street-view" style="font-size: 48px; color: red;"></i>`,
          className: '',
          iconSize: [48, 48],
          iconAnchor: [24, 48]
@@ -166,6 +171,23 @@ include 'components/connect.php';
       }
    }
 
+   // Menambahkan warna Persebaran sekolah di pojok kanan atas
+      var legend = L.control({position: 'topright'});
+      legend.onAdd = function (map) {
+         var div = L.DomUtil.create('div', 'info legend');
+         div.style.backgroundColor = 'white';
+         div.style.padding = '10px';
+         div.style.borderRadius = '5px';
+         div.style.border = '1px solid #ccc';
+         div.innerHTML = '<h4>Sekolah</h4>' +
+            '<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 20px; height: 20px; background-color: blue; margin-right: 10px; border: 1px solid #000;"></div><h4>SMA</h4></div>' +
+            '<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 20px; height: 20px; background-color: orange; margin-right: 10px; border: 1px solid #000;"></div><h4>SMK</h4></div>' +
+            '<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 20px; height: 20px; background-color: green; margin-right: 10px; border: 1px solid #000;"></div><h4>MA</h4></div>' +
+            '<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 20px; height: 20px; background-color: grey; margin-right: 10px; border: 1px solid #000;"></div><h4> ? </h4></div>';
+         return div;
+      };
+      legend.addTo(mymap);
+
    // Display All Markers from DB with Filtering
    var allMarkers = [];
 
@@ -174,22 +196,22 @@ include 'components/connect.php';
    while ($hasil = mysqli_fetch_array($tampil)) {
       $latLng = str_replace(['[', ']', 'LatLng', '(', ')'], '', $hasil['lat_long']);
       $kategori = $hasil['kategori'];
-      $iconColor = $kategori === 'SMA' ? 'blue' : ($kategori === 'SMK' ? 'grey' : ($kategori === 'MA' ? 'green' : 'red'));
+      $iconColor = $kategori === 'SMA' ? 'blue' : ($kategori === 'SMK' ? 'orange' : ($kategori === 'MA' ? 'green' : 'grey'));
    ?>
    var marker = L.marker([<?php echo $latLng; ?>], {
       icon: L.divIcon({
-         html: `<i class="fa fa-map-marker" style="color: <?php echo $iconColor; ?>; font-size: 30px;"></i>`,
+         html: `<i class="fa fa-map-marker-alt" style="color: <?php echo $iconColor; ?>; font-size: 30px;"></i>`,
          className: '',
          iconSize: [24, 24],
          iconAnchor: [12, 24]
       })
    }).bindPopup(`
-      <strong style="font-size: 1.5rem;">Nama Tempat : </strong> <span style="font-size: 1.5rem;"><?php echo $hasil['nama_tempat']; ?></span><br>
-      <strong style="font-size: 1.5rem;">Kategori : </strong> <span style="font-size: 1.5rem;"><?php echo $hasil['kategori']; ?></span><br>
-      <strong style="font-size: 1.5rem;">Keterangan : </strong> <span style="font-size: 1.5rem;"><?php echo $hasil['keterangan']; ?></span><br>
+      <strong style="font-size: 1.5rem;">Nama Sekolah : </strong> <span style="font-size: 1.5rem;"><?php echo htmlspecialchars($hasil['nama_tempat']); ?></span><br>
+      <strong style="font-size: 1.5rem;">Kategori : </strong> <span style="font-size: 1.5rem;"><?php echo htmlspecialchars($hasil['kategori']); ?></span><br>
+      <strong style="font-size: 1.5rem;">Alamat : </strong> <span style="font-size: 1.5rem;"><?php echo htmlspecialchars($hasil['keterangan']); ?></span><br>
       <div class="d-flex justify-content-between">
          <a href="detail.php?id=<?php echo urlencode($hasil['id']); ?>" class="btn btn-sm btn-primary mt-2 text-white">Detail</a>
-         <a href="<?php echo htmlspecialchars($hasil['link_lokasi']); ?>" target="_blank" class="btn btn-sm btn-primary mt-2 text-white">Lokasi</a>
+         <a href="<?php echo htmlspecialchars($hasil['link_lokasi']); ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary mt-2 text-white">Lokasi</a>
       </div>
    `);
    marker.kategori = "<?php echo $hasil['kategori']; ?>";

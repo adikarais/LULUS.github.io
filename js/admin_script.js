@@ -63,3 +63,20 @@ toggleBtn.onclick = (e) => {
 if (darkMode === 'enabled') {
   enabelDarkMode();
 }
+
+// Fungsi untuk menghapus lokasi berdasarkan ID
+function deleteLocation(id) {
+  if (confirm('Apakah Anda yakin ingin menghapus lokasi ini?')) {
+    // Kirim permintaan AJAX untuk menghapus lokasi
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', 'delete_location.php', true);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState === 4 && xhr.status === 200) {
+        alert('Lokasi berhasil dihapus.');
+        location.reload(); // Muat ulang halaman
+      }
+    };
+    xhr.send('id=' + id);
+  }
+}

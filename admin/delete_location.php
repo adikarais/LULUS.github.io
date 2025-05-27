@@ -1,19 +1,32 @@
 <?php
-$mysqli = mysqli_connect('localhost', 'root', '', 'ta_wgis');
+include '../components/connect.php';
 
-// Validate the 'id' parameter
-if (isset($_POST['id']) && is_numeric($_POST['id'])) {
-    $id = intval($_POST['id']);
-    $query = "DELETE FROM lokasi WHERE id = $id";
+if(isset($_COOKIE['tutor_id'])){
+   $tutor_id = $_COOKIE['tutor_id'];
+}else{
+   $tutor_id = '';
+   header('location:login.php');
+   exit();
+}
 
-    if (mysqli_query($mysqli, $query)) {
-        echo "Lokasi berhasil dihapus.";
+if(isset($_POST['id'])) {
+    $id = $_POST['id'];
+    
+    // Validasi ID
+    if(!is_numeric($id)) {
+        die("ID tidak valid");
+    }
+    
+    // Hapus data dari database
+    $delete = $conn->prepare("DELETE FROM `lokasi` WHERE id = ?");
+    $delete->execute([$id]);
+    
+    if($delete->rowCount() > 0) {
+        echo "Lokasi berhasil dihapus";
     } else {
-        http_response_code(500);
-        echo "Terjadi kesalahan saat menghapus lokasi.";
+        echo "Gagal menghapus lokasi atau lokasi tidak ditemukan";
     }
 } else {
-    http_response_code(400);
-    echo "ID tidak valid.";
+    echo "ID tidak diterima";
 }
 ?>

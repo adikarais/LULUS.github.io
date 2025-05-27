@@ -89,3 +89,6 @@ toggleBtn.onclick = (e) => {
     disableDarkMode(); // Nonaktifkan mode gelap
   }
 };
+
+// const total = context.dataset.data.reduce((a, b) => a + b, 0);
+// const percentage = Math.round((value / total) * 100);

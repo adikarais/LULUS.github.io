@@ -95,9 +95,10 @@ if (isset($message)) {
 
    <!-- Navigasi sidebar -->
    <nav class="navbar">
-      <a href="dashboard.php"><i class="fas fa-home"></i><span>Home</span></a>
+      <a href="dashboard.php"><i class="fa fa-cloud-upload"></i><span>Home</span></a>
       <a href="playlists.php"><i class="fa-solid fa-bars-staggered"></i><span>Daftar Sekolah</span></a>
-      <a href="json.php"><i class="fas fa-graduation-cap"></i><span>Persebaran</span></a>
+      <a href="json.php"><i class="fa fa-pie-chart"></i><span>Data Persebaran</span></a>
+      <a href="admin_list.php"><i class="fas fa-address-book"></i><span>Admin List</span></a>
       <a href="../components/admin_logout.php" onclick="return confirm('Logout from this website?');"><i class="fas fa-right-from-bracket"></i><span>Logout</span></a>
    </nav>
 </div>

@@ -111,7 +111,7 @@ $stmt_jurusan->close();
         <p><?= !empty(trim($data['keterangan'])) ? nl2br(htmlspecialchars($data['keterangan'])) : 'Program sekolah tidak tersedia'; ?></p>
 
         <!-- Tombol kembali ke halaman utama -->
-        <a href="home.php" class="btn btn-secondary mt-3">Kembali</a>
+        <a href="index.php" class="btn btn-secondary mt-3">Kembali</a>
     </div>
 </body>
 </html>

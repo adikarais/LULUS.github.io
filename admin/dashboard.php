@@ -73,6 +73,13 @@ if(isset($_COOKIE['tutor_id'])){
 
     </style>
 </head>
+<style>
+   .leaflet-top, .leaflet-bottom {
+    position: absolute;
+    z-index: 900;
+    pointer-events: none;
+   }
+</style>
 <body>
 
 <?php include '../components/admin_header.php'; ?>
@@ -211,9 +218,7 @@ if(isset($_COOKIE['tutor_id'])){
     // Handle user location events
     mymap.on('locationfound', function (e) {
         var userIcon = L.divIcon({
-            html: `<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="red" class="bi bi-geo-fill" viewBox="0 0 16 16">
-                    <path fill-rule="evenodd" d="M4 4a4 4 0 1 1 4.5 3.969V13.5a.5.5 0 0 1-1 0V7.97A4 4 0 0 1 4 3.999zm2.493 8.574a.5.5 0 0 1-.411.575c-.712.118-1.28.295-1.655.493a1.3.3 0 0 0-.37.265.3.3 0 0 0-.057.09V14l.002.008.016.033a.6.6 0 0 0 .145.15c.165.13.435.27.813.395.751.25 1.82.414 3.024.414s2.273-.163 3.024-.414c.378-.126.648-.265.813-.395a.6.6 0 0 0 .146-.15l.015-.033L12 14v-.004a.3.3 0 0 0-.057-.09 1.3 1.3 0 0 0-.37-.264c-.376-.198-.943-.375-1.655-.493a.5.5 0 1 1 .164-.986c.77.127 1.452.328 1.957.594C12.5 13 13 13.4 13 14c0 .426-.26.752-.544.977-.29.228-.68.413-1.116.558-.878.293-2.059.465-3.34.465s-2.462-.172-3.34-.465c-.436-.145-.826-.33-1.116-.558C3.26 14.752 3 14.426 3 14c0-.599.5-1 .961-1.243.505-.266 1.187-.467 1.957-.594a.5.5 0 0 1 .575.411"/>
-                </svg>`,
+            html: `<i class="fas fa-street-view" style="font-size: 48px; color: red;"></i>`,
             className: '',
             iconSize: [48, 48],
             iconAnchor: [24, 48]
@@ -322,6 +327,23 @@ if(isset($_COOKIE['tutor_id'])){
     // Event listener untuk klik pada peta
     mymap.on('click', onMapClick);
 
+    // Menambahkan warna Persebaran sekolah di pojok kanan atas
+      var legend = L.control({position: 'topright'});
+      legend.onAdd = function (map) {
+         var div = L.DomUtil.create('div', 'info legend');
+         div.style.backgroundColor = 'white';
+         div.style.padding = '10px';
+         div.style.borderRadius = '5px';
+         div.style.border = '1px solid #ccc';
+         div.innerHTML = '<h4>Sekolah</h4>' +
+            '<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 20px; height: 20px; background-color: blue; margin-right: 10px; border: 1px solid #000;"></div><h4>SMA</h4></div>' +
+            '<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 20px; height: 20px; background-color: orange; margin-right: 10px; border: 1px solid #000;"></div><h4>SMK</h4></div>' +
+            '<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 20px; height: 20px; background-color: green; margin-right: 10px; border: 1px solid #000;"></div><h4>MA</h4></div>' +
+            '<div style="display: flex; align-items: center; margin-bottom: 5px;"><div style="width: 20px; height: 20px; background-color: grey; margin-right: 10px; border: 1px solid #000;"></div><h4> ? </h4></div>';
+         return div;
+      };
+      legend.addTo(mymap);
+
     // Display All Markers from DB with Filtering
    var allMarkers = [];
 
@@ -330,24 +352,25 @@ if(isset($_COOKIE['tutor_id'])){
    while ($hasil = mysqli_fetch_array($tampil)) {
       $latLng = str_replace(['[', ']', 'LatLng', '(', ')'], '', $hasil['lat_long']);
       $kategori = $hasil['kategori'];
-      $iconColor = $kategori === 'SMA' ? 'blue' : ($kategori === 'SMK' ? 'grey' : ($kategori === 'MA' ? 'green' : 'red'));
+      $iconColor = $kategori === 'SMA' ? 'blue' : ($kategori === 'SMK' ? 'orange' : ($kategori === 'MA' ? 'green' : 'grey'));
    ?>
    var marker = L.marker([<?php echo $latLng; ?>], {
       icon: L.divIcon({
-         html: `<i class="fa fa-map-marker" style="color: <?php echo $iconColor; ?>; font-size: 30px;"></i>`,
+         html: `<i class="fa fa-map-marker-alt" style="color: <?php echo $iconColor; ?>; font-size: 30px;"></i>`,
          className: '',
          iconSize: [24, 24],
          iconAnchor: [12, 24]
       })
    }).bindPopup(`
-      <strong style="font-size: 1.5rem;">Nama Tempat : </strong> <span style="font-size: 1.5rem;"><?php echo $hasil['nama_tempat']; ?></span><br>
-      <strong style="font-size: 1.5rem;">Kategori : </strong> <span style="font-size: 1.5rem;"><?php echo $hasil['kategori']; ?></span><br>
-      <strong style="font-size: 1.5rem;">Keterangan : </strong> <span style="font-size: 1.5rem;"><?php echo $hasil['keterangan']; ?></span><br>
-      <div class="d-flex justify-content-between">
-         <a href="detail.php?id=<?php echo urlencode($hasil['id']); ?>" class="btn btn-sm btn-primary mt-2 text-white">Detail</a>
-         <a href="<?php echo htmlspecialchars($hasil['link_lokasi']); ?>" target="_blank" class="btn btn-sm btn-primary mt-2 text-white">Lokasi</a>
-      </div>
-   `);
+   <strong style="font-size: 1.5rem;">Nama Sekolah : </strong> <span style="font-size: 1.5rem;"><?php echo htmlspecialchars($hasil['nama_tempat']); ?></span><br>
+   <strong style="font-size: 1.5rem;">Kategori : </strong> <span style="font-size: 1.5rem;"><?php echo htmlspecialchars($hasil['kategori']); ?></span><br>
+   <strong style="font-size: 1.5rem;">Alamat : </strong> <span style="font-size: 1.5rem;"><?php echo htmlspecialchars($hasil['keterangan']); ?></span><br>
+   <div class="d-flex justify-content-between">
+      <a href="detail.php?id=<?php echo urlencode($hasil['id']); ?>" class="btn btn-sm btn-primary mt-2 text-white">Detail</a>
+      <a href="<?php echo htmlspecialchars($hasil['link_lokasi']); ?>" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-primary mt-2 text-white">Lokasi</a>
+   </div>
+   <button onclick="deleteLocation(<?php echo $hasil['id']; ?>)" class="btn btn-sm btn-danger mt-2 w-100">Hapus</button>
+`);
    marker.kategori = "<?php echo $hasil['kategori']; ?>";
    marker.addTo(mymap);
    allMarkers.push(marker);
